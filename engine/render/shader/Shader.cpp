@@ -10,23 +10,23 @@
 
 #include "VertexSources.h"
 
-Shader::Shader(unsigned int vertexShader, unsigned int fragmentShader) {
-    this->shaderProgram = createProgram(new unsigned int[2] {vertexShader, fragmentShader}, 2);
+Shader::Shader(unsigned int vertex_shader, unsigned int fragment_shader) {
+    this->shader_program = createProgram(new unsigned int[2] {vertex_shader, fragment_shader}, 2);
 }
 
-Shader::Shader(VertexSources::VertexSource* vertexSource, const char* fragmentShaderSource) : Shader(
-            createShader(vertexSource->source, GL_VERTEX_SHADER),
-            createShader(fragmentShaderSource, GL_FRAGMENT_SHADER)
+Shader::Shader(VertexSources::VertexSource* vertex_source, const char* fragment_shader_source) : Shader(
+            createShader(vertex_source->source, GL_VERTEX_SHADER),
+            createShader(fragment_shader_source, GL_FRAGMENT_SHADER)
     ) {
-    this->vertexSource = vertexSource;
+    this->vertex_source = vertex_source;
 }
 
-Shader::Shader(int shaderProgram) {
-    this->shaderProgram = shaderProgram;
+Shader::Shader(int shader_srogram) {
+    this->shader_program = shader_srogram;
 }
 
 Shader::~Shader() {
-    glDeleteProgram(this->shaderProgram);
+    glDeleteProgram(this->shader_program);
 }
 
 bool check_program_link(GLuint program)
@@ -45,7 +45,7 @@ bool check_program_link(GLuint program)
 }
 
 void Shader::setUniformf(const char *name, float *values, size_t size) const {
-    auto location = glGetUniformLocation(this->shaderProgram, name);
+    auto location = glGetUniformLocation(this->shader_program, name);
     switch (size) {
         case 1: glUniform1f(location, values[0]); break;
         case 2: glUniform2f(location, values[0], values[1]); break;
@@ -55,15 +55,26 @@ void Shader::setUniformf(const char *name, float *values, size_t size) const {
     }
 }
 
-void Shader::setUniform4x4f(const char *name, float * value) {
-    auto location = glGetUniformLocation(this->shaderProgram, name);
+void Shader::setUniformi(const char *name, int *values, size_t size) const {
+    auto location = glGetUniformLocation(this->shader_program, name);
+    switch (size) {
+        case 1: glUniform1i(location, values[0]); break;
+        case 2: glUniform2i(location, values[0], values[1]); break;
+        case 3: glUniform3i(location, values[0], values[1], values[2]); break;
+        case 4: glUniform4i(location, values[0], values[1], values[2], values[3]); break;
+        default: ;
+    }
+}
+
+void Shader::setUniform4x4f(const char *name, float * value) const {
+    auto location = glGetUniformLocation(this->shader_program, name);
     glUniformMatrix4fv(location, 1, GL_FALSE, value);
 }
 
-unsigned int Shader::createShader(const char* shaderSource, int shaderType) {
-    unsigned int shader = glCreateShader(shaderType);
+unsigned int Shader::createShader(const char* shader_source, int shader_type) {
+    unsigned int shader = glCreateShader(shader_type);
 
-    glShaderSource(shader, 1, &shaderSource, nullptr);
+    glShaderSource(shader, 1, &shader_source, nullptr);
     glCompileShader(shader);
 
     return shader;

@@ -1,40 +1,39 @@
-//
-// Created by ruhld on 21.05.2025.
-//
+#pragma once
 
-#ifndef BUFFERBUILDER_H
-#define BUFFERBUILDER_H
 #include <vector>
+#include <cstdint>
 #include "shader/VertexSources.h"
-
 
 class BufferBuilder {
 private:
     std::size_t current_vertex = 0;
-    std::vector<float> data;
+    std::vector<uint8_t> data;
     void data_check();
 
 public:
-
-    unsigned int vboID = 0, vaoID = 0;
-
+    unsigned int vbo_id = 0, vao_id = 0;
     std::size_t vertex_size = 0;
-
     VertexSources::VertexSource* vertex_source;
 
     explicit BufferBuilder(VertexSources::VertexSource* vertex_source);
     ~BufferBuilder();
 
-    BufferBuilder * position(float x, float y, float z);
-    BufferBuilder * color(float r, float g, float b, float a);
-    BufferBuilder * uv(float u, float v);
-    BufferBuilder * next();
-    BufferBuilder * vertex(size_t index);
+    template<typename T>
+    BufferBuilder* layout(size_t index, const T* src_data);
 
-    void create_vao_vbo(unsigned int &vaoID, unsigned int &vboID, const float *vertices, size_t vertex_count) const;
+    BufferBuilder* position(float x, float y, float z);
+    BufferBuilder* color(float r, float g, float b, float a);
+    BufferBuilder* uv(float u, float v);
+    BufferBuilder* next();
+    BufferBuilder* vertex(size_t index);
 
-    [[nodiscard]] float get(size_t index) const;
-    void set(size_t index, float value);
+    void create_vao_vbo(unsigned int& vaoID, unsigned int& vboID, const uint8_t* vertices, size_t byte_size) const;
+
+    template<typename T>
+    [[nodiscard]] T get(size_t index) const;
+
+    template<typename T>
+    void set(size_t index, T value);
 
     void build();
     void update();
@@ -42,9 +41,5 @@ public:
     void draw(int type) const;
     void clear();
 
-    [[nodiscard]] size_t size() const;
+    [[nodiscard]] size_t size() const; // возвращает размер в байтах
 };
-
-
-
-#endif //BUFFERBUILDER_H

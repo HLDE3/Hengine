@@ -26,24 +26,9 @@ RenderModule::RenderModule(const Scene *scene): SceneModule(scene) {
     );
 }
 
-void RenderModule::render() {
-
+void RenderModule::move() {
 
     auto window = Core::getInstance().window;
-    static auto framebuffer = new FrameBuffer(window->width, window->height);
-    if (framebuffer->width != window->width || framebuffer->height != window->height)
-        framebuffer->resize(window->width, window->height);
-
-    glEnable(GL_DEPTH_TEST);
-
-    glfwPollEvents();
-    glClearColor(0.0, 0.0, 0.0, 1.0);
-    glClear(GL_COLOR_BUFFER_BIT);
-
-    int display_w, display_h;
-    glfwGetFramebufferSize(window->window, &display_w, &display_h);
-    glViewport(0, 0, display_w, display_h);
-
 
     static float yaw = -90.0f;
     static float pitch = 0.0f;
@@ -76,59 +61,84 @@ void RenderModule::render() {
     dir.y = sin(glm::radians(pitch));
     dir.z = sin(glm::radians(yaw)) * cos(glm::radians(pitch));
     camera->direction = glm::normalize(dir);
+}
 
+void RenderModule::render() {
+
+    auto window = Core::getInstance().window;
+
+    static auto framebuffer = new FrameBuffer(window->width, window->height);
+    if (framebuffer->width != window->width || framebuffer->height != window->height)
+        framebuffer->resize(window->width, window->height);
+
+
+    glEnable(GL_DEPTH_TEST);
+    glEnable(GL_ALPHA_TEST);
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    //glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
+
+    glfwPollEvents();
+    glClearColor(0.0, 0.0, 0.0, 1.0);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+
+    int display_w, display_h;
+    glfwGetFramebufferSize(window->window, &display_w, &display_h);
+    glViewport(0, 0, display_w, display_h);
+
+    move();
 
     auto model = glm::mat4(1.0f);
     glm::mat4 view = camera->getViewMatrix();
     glm::mat4 projection = camera->getProjectionMatrix(window);
 
-    auto shader = ShaderPrograms::position_color_pvm;
 
-    glUseProgram(shader->shaderProgram);
+    {
+        auto shader = ShaderPrograms::position_color;
 
-    shader->setUniform4x4f("model", glm::value_ptr(model));
+        glUseProgram(shader->shader_program);
 
-    shader->setUniform4x4f("view", glm::value_ptr(view));
+        shader->setUniform4x4f("model", glm::value_ptr(model));
 
-    shader->setUniform4x4f("projection", glm::value_ptr(projection));
+        shader->setUniform4x4f("view", glm::value_ptr(view));
 
-    // Пример изменения цвета (или других данных) каждый кадр
-    auto buffer = new BufferBuilder(shader->vertexSource);
-    framebuffer->bind_write();
+        shader->setUniform4x4f("projection", glm::value_ptr(projection));
 
+        auto buffer = new BufferBuilder(shader->vertex_source);
 
-    buffer->clear();
-    // Нижняя грань (z = -0.5)
-    buffer->vertex(0)->position(-0.5f, -0.5f, -0.5f)->color(1.0, 0.0, 0.0, 1.0)->next();
-    buffer->position(0.5f, -0.5f, -0.5f)->color(0.0, 1.0, 0.0, 1.0)->next();
-    buffer->position(0.5f, 0.5f, -0.5f)->color(0.0, 0.0, 1.0, 1.0)->next();
-    buffer->position(-0.5f, 0.5f, -0.5f)->color(1.0, 1.0, 0.0, 1.0)->next();
-    buffer->update();
-    buffer->draw(GL_TRIANGLE_FAN);
+        buffer->position(-5.5f, -5.5f, 5.5f)->color(1.0, 0.0, 0.0, 1.0)->next();
+        buffer->position(5.5f, -5.5f, 5.5f)->color(0.0, 1.0, 0.0, 1.0)->next();
+        buffer->position(5.5f, 5.5f, 5.5f)->color(0.0, 0.0, 1.0, 1.0)->next();
+        buffer->position(-5.5f, 5.5f, 5.5f)->color(1.0, 1.0, 0.0, 1.0)->next();
+        buffer->update();
+        buffer->draw(GL_TRIANGLE_FAN);
 
-    buffer->clear();
-    // Нижняя грань (z = -0.5)
-    buffer->vertex(0)->position(-0.5f, -0.5f, 0.5f)->color(.5, 0.5, 0.5, 1.0)->next();
-    buffer->position(0.5f, -0.5f, 0.5f)->color(0.5, .5, 0.5, 1.0)->next();
-    buffer->position(0.5f, 0.5f, 0.5f)->color(0.5, 0.5, .5, 1.0)->next();
-    buffer->position(-0.5f, 0.5f, 0.5f)->color(.5, .5, 0.5, 1.0)->next();
-    buffer->update();
-    buffer->draw(GL_TRIANGLE_FAN);
+        glUseProgram(0);
+    }
 
+    {
+        auto shader = ShaderPrograms::position_color;
 
-    framebuffer->unbind_write();
+        glUseProgram(shader->shader_program);
 
-    // Привязка фреймбуфера для чтения и копирование содержимого на экран
-    framebuffer->bind_read();
-    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0); // Назначаем экран как draw framebuffer
-    glBlitFramebuffer(
-        0, 0, framebuffer->width, framebuffer->height, // src rect
-        0, 0, framebuffer->width, framebuffer->height, // dst rect
-        GL_COLOR_BUFFER_BIT, GL_NEAREST
-    );
-    framebuffer->unbind_read();
-    framebuffer->clear();
+        shader->setUniform4x4f("model", glm::value_ptr(model));
 
+        shader->setUniform4x4f("view", glm::value_ptr(view));
+
+        shader->setUniform4x4f("projection", glm::value_ptr(projection));
+
+        auto buffer = new BufferBuilder(shader->vertex_source);
+
+        buffer->position(-0.5f, -0.5f, -0.5f)->color(1.0, 0.0, 0.0, 0.5)->next();
+        buffer->position(0.5f, -0.5f, -0.5f)->color(0.0, 1.0, 0.0, 0.5)->next();
+        buffer->position(0.5f, 0.5f, -0.5f)->color(0.0, 0.0, 1.0, 0.5)->next();
+        buffer->position(-0.5f, 0.5f, -0.5f)->color(1.0, 1.0, 0.0, 0.5)->next();
+        buffer->update();
+        buffer->draw(GL_TRIANGLE_FAN);
+
+        glUseProgram(0);
+    }
 
     glfwSwapBuffers(window->window);
 }

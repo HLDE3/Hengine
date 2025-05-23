@@ -45,6 +45,7 @@ add_executable(${PROJECT_NAME} main.cpp
         engine/scene/Camera.cpp
         engine/render/shader/VertexSources.h
         engine/render/shader/ShaderPrograms.h
+        engine/utils/type_utils.h
 )
 
 # Свяжите проект с библиотеками GLFW, GLEW и OpenGL

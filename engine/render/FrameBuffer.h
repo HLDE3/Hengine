@@ -1,17 +1,10 @@
-//
-// Created by ruhld on 22.05.2025.
-//
-
-#ifndef FRAMEBUFFER_H
-#define FRAMEBUFFER_H
-
-
+#pragma once
 
 class FrameBuffer {
 public:
+    unsigned int texture = 0;
+    unsigned int depth_renderbuffer = 0;
     unsigned int framebuffer = 0;
-    unsigned int colorRenderbuffer = 0;
-    unsigned int depthRenderbuffer = 0;
     int width = 0, height = 0;
 
     FrameBuffer();
@@ -22,10 +15,9 @@ public:
     void unbind_write() const;
     void bind_read() const;
     void unbind_read() const;
+    void bind_texture() const;
+    void unbind_texture() const;
     void resize(int newWidth, int newHeight);
     void clear() const;
+    void blit() const;
 };
-
-
-
-#endif //FRAMEBUFFER_H

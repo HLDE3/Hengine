@@ -17,6 +17,8 @@ public:
 
     explicit RenderModule(const Scene *scene);
 
+    void move();
+
     void render();
 
     void onEvent(Event* event) override {
