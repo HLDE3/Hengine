@@ -6,10 +6,15 @@
 
 #include <iostream>
 
+#define STB_IMAGE_IMPLEMENTATION
+
+#include "../../../../utils/stb_image.h"
+
 #include <glm.hpp>
 #include <gtc/matrix_transform.hpp>
 #include <gtc/type_ptr.hpp>
 
+#include "post_processing.h"
 #include "../../../../Core.h"
 #include "../../../../render/BufferBuilder.h"
 #include "../../../../render/FrameBuffer.h"
@@ -24,6 +29,22 @@ RenderModule::RenderModule(const Scene *scene): SceneModule(scene) {
         {0, 1, 0},
         45.0f
     );
+}
+GLuint loadTexture(const char* path) {
+    int width, height, channels;
+    unsigned char* data = stbi_load(path, &width, &height, &channels, 4);
+    if (!data) {
+        std::cerr << "Не удалось загрузить картинку: " << path << std::endl;
+        return 0;
+    }
+    GLuint tex;
+    glGenTextures(1, &tex);
+    glBindTexture(GL_TEXTURE_2D, tex);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    stbi_image_free(data);
+    return tex;
 }
 
 void RenderModule::move() {
@@ -63,36 +84,23 @@ void RenderModule::move() {
     camera->direction = glm::normalize(dir);
 }
 
-void RenderModule::render() {
+void resize_buffer(FrameBuffer *buffer) {
+    auto window = Core::getInstance().window;
+    int width = window->width, height = window->height;
+    if (buffer->width != width || buffer->height != height) {
+        buffer->resize(width, height);
+    }
+}
+
+void RenderModule::render_scene() const {
 
     auto window = Core::getInstance().window;
 
-    static auto framebuffer = new FrameBuffer(window->width, window->height);
-    if (framebuffer->width != window->width || framebuffer->height != window->height)
-        framebuffer->resize(window->width, window->height);
-
-
-    glEnable(GL_DEPTH_TEST);
-    glEnable(GL_ALPHA_TEST);
-    glEnable(GL_BLEND);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-    //glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
-
-    glfwPollEvents();
-    glClearColor(0.0, 0.0, 0.0, 1.0);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-
-    int display_w, display_h;
-    glfwGetFramebufferSize(window->window, &display_w, &display_h);
-    glViewport(0, 0, display_w, display_h);
-
-    move();
+    static GLuint tex = loadTexture("C:/Users/ruhld/CLionProjects/Hengine/assets/bob.jpg");
 
     auto model = glm::mat4(1.0f);
     glm::mat4 view = camera->getViewMatrix();
     glm::mat4 projection = camera->getProjectionMatrix(window);
-
 
     {
         auto shader = ShaderPrograms::position_color;
@@ -111,14 +119,16 @@ void RenderModule::render() {
         buffer->position(5.5f, -5.5f, 5.5f)->color(0.0, 1.0, 0.0, 1.0)->next();
         buffer->position(5.5f, 5.5f, 5.5f)->color(0.0, 0.0, 1.0, 1.0)->next();
         buffer->position(-5.5f, 5.5f, 5.5f)->color(1.0, 1.0, 0.0, 1.0)->next();
-        buffer->update();
+        buffer->build();
         buffer->draw(GL_TRIANGLE_FAN);
+
+        delete buffer;
 
         glUseProgram(0);
     }
 
     {
-        auto shader = ShaderPrograms::position_color;
+        auto shader = ShaderPrograms::position_color_texture;
 
         glUseProgram(shader->shader_program);
 
@@ -128,17 +138,73 @@ void RenderModule::render() {
 
         shader->setUniform4x4f("projection", glm::value_ptr(projection));
 
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, tex);
+        shader->setUniform1i("tex", 0);
+
         auto buffer = new BufferBuilder(shader->vertex_source);
 
-        buffer->position(-0.5f, -0.5f, -0.5f)->color(1.0, 0.0, 0.0, 0.5)->next();
-        buffer->position(0.5f, -0.5f, -0.5f)->color(0.0, 1.0, 0.0, 0.5)->next();
-        buffer->position(0.5f, 0.5f, -0.5f)->color(0.0, 0.0, 1.0, 0.5)->next();
-        buffer->position(-0.5f, 0.5f, -0.5f)->color(1.0, 1.0, 0.0, 0.5)->next();
-        buffer->update();
+        buffer->position(-0.5f, -0.5f, -0.5f)->color(1.0, 0.0, 0.0, 1.0)->uv(0.0f, 0.0f)->next();
+        buffer->position(0.5f, -0.5f, -0.5f)->color(0.0, 1.0, 0.0, 1.0)->uv(1.0f, 0.0f)->next();
+        buffer->position(0.5f, 0.5f, -0.5f)->color(0.0, 0.0, 1.0, 1.0)->uv(1.0f, 1.0f)->next();
+        buffer->position(-0.5f, 0.5f, -0.5f)->color(1.0, 1.0, 0.0, 1.0)->uv(0.0f, 1.0f)->next();
+        buffer->build();
         buffer->draw(GL_TRIANGLE_FAN);
 
+        delete buffer;
+
+        glBindTexture(GL_TEXTURE_2D, 0);
         glUseProgram(0);
     }
+}
+
+
+void RenderModule::render() {
+
+    auto window = Core::getInstance().window;
+
+    static GLuint tex = loadTexture("C:/Users/ruhld/CLionProjects/Hengine/assets/bob.jpg");
+
+    static auto framebuffer = new FrameBuffer(window->width, window->height);
+    resize_buffer(framebuffer);
+
+    static auto result = new FrameBuffer(window->width, window->height);
+    if (result->width != window->width || result->height != window->height)
+        result->resize(window->width, window->height);
+
+    glEnable(GL_DEPTH_TEST);
+    glEnable(GL_ALPHA_TEST);
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    //glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
+    //glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE, GL_ONE, GL_ZERO);
+
+
+    glfwPollEvents();
+    glClearColor(0.0, 0.0, 0.0, 1.0);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+
+    int display_w, display_h;
+    glfwGetFramebufferSize(window->window, &display_w, &display_h);
+    glViewport(0, 0, display_w, display_h);
+
+    move();
+
+    framebuffer->bind_write();
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+    render_scene();
+
+    framebuffer->unbind_write();
+
+    for (auto function : post_processing::functions) {
+        function.second(framebuffer);
+    }
+
+    framebuffer->blit();
+
+    //post_processing(framebuffer);
 
     glfwSwapBuffers(window->window);
 }

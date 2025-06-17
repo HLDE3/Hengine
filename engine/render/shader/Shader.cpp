@@ -44,26 +44,47 @@ bool check_program_link(GLuint program)
     return true;
 }
 
-void Shader::setUniformf(const char *name, float *values, size_t size) const {
-    auto location = glGetUniformLocation(this->shader_program, name);
-    switch (size) {
-        case 1: glUniform1f(location, values[0]); break;
-        case 2: glUniform2f(location, values[0], values[1]); break;
-        case 3: glUniform3f(location, values[0], values[1], values[2]); break;
-        case 4: glUniform4f(location, values[0], values[1], values[2], values[3]); break;
-        default: ;
-    }
+void Shader::setUniform1i(const char *name, int v1) const {
+    glUniform1i(glGetUniformLocation(this->shader_program, name), v1);
 }
 
-void Shader::setUniformi(const char *name, int *values, size_t size) const {
+void Shader::setUniform2i(const char *name, int v1, int v2) const {
+    glUniform2i(glGetUniformLocation(this->shader_program, name), v1, v2);
+}
+
+void Shader::setUniform3i(const char *name, int v1, int v2, int v3) const {
+    glUniform3i(glGetUniformLocation(this->shader_program, name), v1, v2, v3);
+}
+
+void Shader::setUniform4i(const char *name, int v1, int v2, int v3, int v4) const {
+    glUniform4i(glGetUniformLocation(this->shader_program, name), v1, v2, v3, v4);
+}
+
+void Shader::setUniform1f(const char *name, float v1) const {
+    glUniform1f(glGetUniformLocation(this->shader_program, name), v1);
+}
+
+void Shader::setUniform2f(const char *name, float v1, float v2) const {
+    glUniform2f(glGetUniformLocation(this->shader_program, name), v1, v2);
+}
+
+void Shader::setUniform3f(const char *name, float v1, float v2, float v3) const {
+    glUniform3f(glGetUniformLocation(this->shader_program, name), v1, v2, v3);
+}
+
+void Shader::setUniform4f(const char *name, float v1, float v2, float v3, float v4) const {
+    glUniform4f(glGetUniformLocation(this->shader_program, name), v1, v2, v3, v4);
+}
+
+void Shader::setUniform2x2f(const char *name, float * value) const {
     auto location = glGetUniformLocation(this->shader_program, name);
-    switch (size) {
-        case 1: glUniform1i(location, values[0]); break;
-        case 2: glUniform2i(location, values[0], values[1]); break;
-        case 3: glUniform3i(location, values[0], values[1], values[2]); break;
-        case 4: glUniform4i(location, values[0], values[1], values[2], values[3]); break;
-        default: ;
-    }
+    glUniformMatrix2fv(location, 1, GL_FALSE, value);
+}
+
+
+void Shader::setUniform3x3f(const char *name, float * value) const {
+    auto location = glGetUniformLocation(this->shader_program, name);
+    glUniformMatrix3fv(location, 1, GL_FALSE, value);
 }
 
 void Shader::setUniform4x4f(const char *name, float * value) const {

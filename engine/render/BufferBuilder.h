@@ -19,7 +19,7 @@ public:
     ~BufferBuilder();
 
     template<typename T>
-    BufferBuilder* layout(size_t index, const T* src_data);
+    int layout(size_t index, const T* src_data);
 
     BufferBuilder* position(float x, float y, float z);
     BufferBuilder* color(float r, float g, float b, float a);

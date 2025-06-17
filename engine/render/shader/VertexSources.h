@@ -46,18 +46,18 @@ namespace VertexSources {
     inline auto position_color = new VertexSource {
         R"(#version 330 core
 
-            layout (location = 0) in vec3 position;
-            layout (location = 1) in vec4 color;
+            layout (location = 0) in vec3 positionIn;
+            layout (location = 1) in vec4 colorIn;
 
             uniform mat4 projection;
             uniform mat4 model;
             uniform mat4 view;
 
-            out vec4 outColor;
+            out vec4 color;
 
             void main() {
-                gl_Position = projection * view * model * vec4(position, 1.0);
-                outColor = color;
+                gl_Position = projection * view * model * vec4(positionIn, 1.0);
+                color = colorIn;
             })",
         {
             new Layout(0, 3, GL_FLOAT),
@@ -68,21 +68,21 @@ namespace VertexSources {
     inline auto position_color_texture = new VertexSource {
         R"(#version 330 core
 
-            layout (location = 0) in vec3 position;
-            layout (location = 1) in vec4 color;
-            layout (location = 2) in vec2 texCoord;
+            layout (location = 0) in vec3 positionIn;
+            layout (location = 1) in vec4 colorIn;
+            layout (location = 2) in vec2 texCoordIn;
 
             uniform mat4 projection;
             uniform mat4 model;
             uniform mat4 view;
 
-            out vec4 outColor;
-            out vec2 outTexCoord;
+            out vec4 color;
+            out vec2 texCoord;
 
             void main() {
-                gl_Position = projection * view * model * vec4(position, 1.0);
-                outColor = color;
-                outTexCoord = texCoord;
+                gl_Position = projection * view * model * vec4(positionIn, 1.0);
+                color = colorIn;
+                texCoord = texCoordIn;
             })",
         {
             new Layout(0, 3, GL_FLOAT),
@@ -94,18 +94,36 @@ namespace VertexSources {
     inline auto position_texture = new VertexSource {
         R"(#version 330 core
 
-            layout (location = 0) in vec3 position;
-            layout (location = 1) in vec2 texCoord;
+            layout (location = 0) in vec3 positionIn;
+            layout (location = 1) in vec2 texCoordIn;
 
             uniform mat4 projection;
             uniform mat4 model;
             uniform mat4 view;
 
-            out vec2 outTexCoord;
+            out vec2 texCoord;
 
             void main() {
-                gl_Position = projection * view * model * vec4(position, 1.0);
-                outTexCoord = texCoord;
+                gl_Position = projection * view * model * vec4(positionIn, 1.0);
+                texCoord = texCoordIn;
+            })",
+        {
+            new Layout(0, 3, GL_FLOAT),
+            new Layout(1, 2, GL_FLOAT)
+        }
+    };
+
+    inline auto position_texture_nmvp = new VertexSource {
+        R"(#version 330 core
+
+            layout (location = 0) in vec3 positionIn;
+            layout (location = 1) in vec2 texCoordIn;
+
+            out vec2 texCoord;
+
+            void main() {
+                gl_Position = vec4(positionIn, 1.0);
+                texCoord = texCoordIn;
             })",
         {
             new Layout(0, 3, GL_FLOAT),

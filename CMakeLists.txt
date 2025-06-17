@@ -46,6 +46,7 @@ add_executable(${PROJECT_NAME} main.cpp
         engine/render/shader/VertexSources.h
         engine/render/shader/ShaderPrograms.h
         engine/utils/type_utils.h
+        engine/scene/module/impl/scene/post_processing.h
 )
 
 # Свяжите проект с библиотеками GLFW, GLEW и OpenGL

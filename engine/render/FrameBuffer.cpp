@@ -2,6 +2,8 @@
 #include <cstdio>
 #include <GL/glew.h>
 
+#define HDR
+
 FrameBuffer::FrameBuffer() {
     glGenFramebuffers(1, &framebuffer);
 }
@@ -62,6 +64,9 @@ void FrameBuffer::unbind_texture() const {
 }
 
 void FrameBuffer::resize(int newWidth, int newHeight) {
+    if (width == newWidth && height == newHeight) {
+        return;
+    }
     width = newWidth;
     height = newHeight;
     glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
@@ -69,7 +74,14 @@ void FrameBuffer::resize(int newWidth, int newHeight) {
     if (texture) glDeleteTextures(1, &texture);
     glGenTextures(1, &texture);
     glBindTexture(GL_TEXTURE_2D, texture);
+
+
+#ifdef HDR
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, width, height, 0, GL_RGBA, GL_FLOAT, nullptr);
+#elifdef
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
+#endif
+
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture, 0);

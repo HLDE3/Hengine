@@ -23,8 +23,6 @@ int Core::init() {
     auto module = new RenderModule(scene);
     scene->modules.emplace_back(module);
 
-    auto framebuffer = new FrameBuffer(1280, 720);
-
     while (!glfwWindowShouldClose(window->window))
     {
         window->update();

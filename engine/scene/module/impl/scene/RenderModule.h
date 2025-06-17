@@ -10,6 +10,8 @@
 #include "../../../event/Event.h"
 #include "../../../event/SceneEvents.h"
 
+class FrameBuffer;
+
 class RenderModule final : public SceneModule {
 public:
 
@@ -18,6 +20,8 @@ public:
     explicit RenderModule(const Scene *scene);
 
     void move();
+
+    void render_scene() const;
 
     void render();
 

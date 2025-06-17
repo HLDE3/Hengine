@@ -30,16 +30,15 @@ void BufferBuilder::data_check() {
 }
 
 template<typename T>
-BufferBuilder* BufferBuilder::layout(size_t index, const T* src_data) {
+int BufferBuilder::layout(size_t index, const T* src_data) {
     if (index >= vertex_source->layouts.size()) {
-        std::cerr << "Index out of bounds: " << index << " >= " << vertex_source->layouts.size() << std::endl;
-        return this;
+        return -1;
     }
     auto layout = vertex_source->layouts[index];
     size_t offset = layout->offset; // offset уже в байтах
     data_check();
     std::memcpy(&data[current_vertex * vertex_size + offset], src_data, layout->count * layout->type_size);
-    return this;
+    return 0;
 }
 
 template<typename T>
@@ -70,13 +69,19 @@ BufferBuilder* BufferBuilder::position(float x, float y, float z) {
 
 BufferBuilder* BufferBuilder::color(float r, float g, float b, float a) {
     float arr[4] {r, g, b, a};
-    layout(1, arr);
+    if (layout(1, arr) != 0) {
+        layout(0, arr);
+    }
     return this;
 }
 
 BufferBuilder* BufferBuilder::uv(float u, float v) {
     float arr[2] {u, v};
-    layout(2, arr);
+    if (layout(2, arr) != 0) {
+        if (layout(1, arr) != 0) {
+            layout(0, arr);
+        }
+    }
     return this;
 }
 

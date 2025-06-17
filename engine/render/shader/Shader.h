@@ -21,12 +21,18 @@ public:
     explicit Shader(int shader_srogram);
     ~Shader();
 
-    void setUniformf(const char* name, float * values, size_t size) const;
-    void setUniformi(const char* name, int * values, size_t size) const;
+    void setUniform1i(const char* name, int v1) const;
+    void setUniform2i(const char* name, int v1, int v2) const;
+    void setUniform3i(const char* name, int v1, int v2, int v3) const;
+    void setUniform4i(const char* name, int v1, int v2, int v3, int v4) const;
 
-    void setUniform1x1f(const char* name, float value);
-    void setUniform2x2f(const char* name, float value);
-    void setUniform3x3f(const char* name, float value);
+    void setUniform1f(const char* name, float v1) const;
+    void setUniform2f(const char* name, float v1, float v2) const;
+    void setUniform3f(const char* name, float v1, float v2, float v3) const;
+    void setUniform4f(const char* name, float v1, float v2, float v3, float v4) const;
+
+    void setUniform2x2f(const char* name, float * value) const;
+    void setUniform3x3f(const char* name, float * value) const;
     void setUniform4x4f(const char* name, float * value) const;
 
     static unsigned int createShader(const char* shader_source, int shader_type);
