@@ -21,8 +21,8 @@ Shader::Shader(VertexSources::VertexSource* vertex_source, const char* fragment_
     this->vertex_source = vertex_source;
 }
 
-Shader::Shader(int shader_srogram) {
-    this->shader_program = shader_srogram;
+Shader::Shader(int shader_program) {
+    this->shader_program = shader_program;
 }
 
 Shader::~Shader() {

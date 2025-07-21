@@ -92,6 +92,22 @@ void resize_buffer(FrameBuffer *buffer) {
     }
 }
 
+void setup_mvp(Shader * shader, glm::mat4 model, glm::mat4 view, glm::mat4 projection) {
+    shader->setUniform4x4f("model", glm::value_ptr(model));
+    shader->setUniform4x4f("view", glm::value_ptr(view));
+    shader->setUniform4x4f("projection", glm::value_ptr(projection));
+}
+
+void cube(glm::mat4 model, glm::mat4 view, glm::mat4 projection) {
+    auto shader = ShaderPrograms::position_color_texture;
+
+    glUseProgram(shader->shader_program);
+
+    setup_mvp(shader, model, view, projection);
+
+    glUseProgram(0);
+}
+
 void RenderModule::render_scene() const {
 
     auto window = Core::getInstance().window;
@@ -107,11 +123,7 @@ void RenderModule::render_scene() const {
 
         glUseProgram(shader->shader_program);
 
-        shader->setUniform4x4f("model", glm::value_ptr(model));
-
-        shader->setUniform4x4f("view", glm::value_ptr(view));
-
-        shader->setUniform4x4f("projection", glm::value_ptr(projection));
+        setup_mvp(shader, model, view, projection);
 
         auto buffer = new BufferBuilder(shader->vertex_source);
 
@@ -132,11 +144,7 @@ void RenderModule::render_scene() const {
 
         glUseProgram(shader->shader_program);
 
-        shader->setUniform4x4f("model", glm::value_ptr(model));
-
-        shader->setUniform4x4f("view", glm::value_ptr(view));
-
-        shader->setUniform4x4f("projection", glm::value_ptr(projection));
+        setup_mvp(shader, model, view, projection);
 
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, tex);

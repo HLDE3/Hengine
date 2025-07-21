@@ -18,7 +18,7 @@ public:
 
     Shader(VertexSources::VertexSource* vertex_source, const char *fragment_shader_source);
 
-    explicit Shader(int shader_srogram);
+    explicit Shader(int shader_program);
     ~Shader();
 
     void setUniform1i(const char* name, int v1) const;

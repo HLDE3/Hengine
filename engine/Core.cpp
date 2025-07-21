@@ -12,7 +12,7 @@
 
 int Core::init() {
 
-    window = new Window(1280, 720, "CLionProjects");
+    window = new Window(1280, 720, "Zalupa");
     window->init();
 
     ShaderPrograms::init();

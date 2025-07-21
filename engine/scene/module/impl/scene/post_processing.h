@@ -2,8 +2,7 @@
 // Created by ruhld on 24.05.2025.
 //
 
-#ifndef POSTPROCESSING_H
-#define POSTPROCESSING_H
+#pragma once
 
 #include <functional>
 
@@ -310,5 +309,3 @@ namespace post_processing {
 
 
 }
-
-#endif //POSTPROCESSING_H
