@@ -12,23 +12,30 @@ namespace VertexSources {
 
 class Shader {
 public:
-    int shaderProgram;
-    VertexSources::VertexSource* vertexSource = nullptr;
-    explicit Shader(unsigned int vertexShader, unsigned int fragmentShader);
+    int shader_program;
+    VertexSources::VertexSource* vertex_source = nullptr;
+    explicit Shader(unsigned int vertex_shader, unsigned int fragment_shader);
 
-    Shader(VertexSources::VertexSource* vertexSource, const char *fragmentShaderSource);
+    Shader(VertexSources::VertexSource* vertex_source, const char *fragment_shader_source);
 
-    explicit Shader(int shaderProgram);
+    explicit Shader(int shader_program);
     ~Shader();
 
-    void setUniformf(const char* name, float * values, size_t size) const;
+    void setUniform1i(const char* name, int v1) const;
+    void setUniform2i(const char* name, int v1, int v2) const;
+    void setUniform3i(const char* name, int v1, int v2, int v3) const;
+    void setUniform4i(const char* name, int v1, int v2, int v3, int v4) const;
 
-    void setUniform1x1f(const char* name, float value);
-    void setUniform2x2f(const char* name, float value);
-    void setUniform3x3f(const char* name, float value);
-    void setUniform4x4f(const char* name, float * value);
+    void setUniform1f(const char* name, float v1) const;
+    void setUniform2f(const char* name, float v1, float v2) const;
+    void setUniform3f(const char* name, float v1, float v2, float v3) const;
+    void setUniform4f(const char* name, float v1, float v2, float v3, float v4) const;
 
-    static unsigned int createShader(const char* shaderSource, int shaderType);
+    void setUniform2x2f(const char* name, float * value) const;
+    void setUniform3x3f(const char* name, float * value) const;
+    void setUniform4x4f(const char* name, float * value) const;
+
+    static unsigned int createShader(const char* shader_source, int shader_type);
     static int createProgram(unsigned int shader, bool destroy = true);
     static int createProgram(unsigned int shaders[], size_t size, bool destroy = true);
 };

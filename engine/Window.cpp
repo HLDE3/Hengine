@@ -65,7 +65,7 @@ Window::Window(float width, float height, const char* title) : x(0), y(0), width
 
 void Window::init() {
 
-    initialize_glfw_and_context(window, 1280, 720, "OpenGL");
+    initialize_glfw_and_context(window, 1280, 720, title);
     initialize_glew();
 
 }

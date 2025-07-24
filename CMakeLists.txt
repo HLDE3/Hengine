@@ -4,18 +4,15 @@ set(PROJECT_NAME Hengine)
 
 project(${PROJECT_NAME})
 
-
 set(CMAKE_CXX_STANDARD 23)
 
-# Укажите путь к файлам заголовков GLFW и GLEW
-include_directories(C:/Users/ruhld/Documents/lib/glfw-3.4/include)
-include_directories(C:/Users/ruhld/Documents/lib/glew-2.1.0/include)
-include_directories(C:/Users/ruhld/Documents/lib/glm)
+include_directories(third-party/glfw-3.4/include)
+include_directories(third-party/glew-2.1.0/include)
+include_directories(third-party/glm)
 
-# Укажите пути к библиотекам GLFW и GLEW
-link_directories(C:/Users/ruhld/Documents/lib/glfw-3.4/lib-mingw-w64)
-link_directories(C:/Users/ruhld/Documents/lib/glew-2.1.0/lib/Release/x64)
-# Добавьте исполняемый файл
+link_directories(third-party/glfw-3.4/lib-mingw-w64)
+link_directories(third-party/glew-2.1.0/lib/Release/x64)
+
 add_executable(${PROJECT_NAME} main.cpp
         engine/render/shader/Shader.cpp
         engine/render/shader/Shader.h
@@ -45,7 +42,8 @@ add_executable(${PROJECT_NAME} main.cpp
         engine/scene/Camera.cpp
         engine/render/shader/VertexSources.h
         engine/render/shader/ShaderPrograms.h
+        engine/utils/type_utils.h
+        engine/scene/module/impl/scene/post_processing.h
 )
 
-# Свяжите проект с библиотеками GLFW, GLEW и OpenGL
 target_link_libraries(${PROJECT_NAME} glfw3 glew32 opengl32)

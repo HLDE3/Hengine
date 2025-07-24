@@ -4,98 +4,126 @@
 
 #ifndef VERTEXSOURCES_H
 #define VERTEXSOURCES_H
+#include <iostream>
 #include <vector>
 #include <GL/glew.h>
+#include "../../utils/type_utils.h"
 
 namespace VertexSources {
 
-    struct Layout {
+    class Layout {
+    public:
         int location;
         int count;
         int type;
         int normalized;
+        size_t type_size;
+        int offset = 0;
+        const void* pointer = nullptr;
+        Layout(int location, int count, int type, bool normalized = false) :
+            location(location), count(count), type(type), normalized(normalized) {
+            type_size = type_utils::size_of_gl_enum(type);
+        }
     };
 
-    struct VertexSource {
+    class VertexSource {
+    public:
+
         const char* source;
-        std::vector<Layout> layouts;
-    };
+        std::vector<Layout*> layouts;
 
-    inline auto position_color_texture = new VertexSource {
-        R"(#version 330 core"
-
-            layout (location = 0) in vec3 position;
-            layout (location = 1) in vec4 color;
-            layout (location = 2) in vec2 texCoord;
-
-            out vec4 outColor;
-            out vec2 outTexCoord;
-
-            void main() {
-                gl_Position = vec4(position, 1.0);
-                outColor = color;
-                outTexCoord = texCoord;
-            })",
-        {
-            {0, 3, GL_FLOAT, GL_FALSE},
-            {1, 4, GL_FLOAT, GL_FALSE},
-            {2, 2, GL_FLOAT, GL_FALSE}
+        VertexSource(const char* source, const std::vector<Layout*> &layouts) :
+            source(source), layouts(layouts) {
+            auto offset = 0;
+            for (auto layout : layouts) {
+                layout->pointer = reinterpret_cast<const void*>(offset * layout->type_size);
+                layout->offset = offset * layout->type_size;
+                offset += layout->count;
+            }
         }
     };
 
     inline auto position_color = new VertexSource {
         R"(#version 330 core
 
-            layout (location = 0) in vec3 position;
-            layout (location = 1) in vec4 color;
+            layout (location = 0) in vec3 positionIn;
+            layout (location = 1) in vec4 colorIn;
 
-            out vec4 outColor;
+            uniform mat4 mvp;
+
+            out vec4 color;
 
             void main() {
-                gl_Position = vec4(position, 1.0);
-                outColor = color;
+                gl_Position = mvp * vec4(positionIn, 1.0);
+                color = colorIn;
             })",
         {
-            {0, 3, GL_FLOAT, GL_FALSE},
-            {1, 4, GL_FLOAT, GL_FALSE}
+            new Layout(0, 3, GL_FLOAT),
+            new Layout(1, 4, GL_FLOAT)
         }
     };
 
-    inline auto position = new VertexSource {
-        R"(#version 330 core"
-
-            layout (location = 0) in vec3 position;
-
-            void main() {
-                gl_Position = vec4(position, 1.0);
-            })",
-        {
-            {0, 3, GL_FLOAT, GL_FALSE}
-        }
-    };
-
-    inline auto position_color_pvm = new VertexSource {
+    inline auto position_color_texture = new VertexSource {
         R"(#version 330 core
 
-            layout (location = 0) in vec3 position;
-            layout (location = 1) in vec4 color;
+            layout (location = 0) in vec3 positionIn;
+            layout (location = 1) in vec4 colorIn;
+            layout (location = 2) in vec2 texCoordIn;
 
-            uniform mat4 projection;
-            uniform mat4 model;
-            uniform mat4 view;
+            uniform mat4 mvp;
 
-            out vec4 outColor;
+            out vec4 color;
+            out vec2 texCoord;
 
             void main() {
-                gl_Position = projection * view * model * vec4(position, 1.0);
-                outColor = color;
+                gl_Position = mvp * vec4(positionIn, 1.0);
+                color = colorIn;
+                texCoord = texCoordIn;
             })",
         {
-            {0, 3, GL_FLOAT, GL_FALSE},
-            {1, 4, GL_FLOAT, GL_FALSE}
+            new Layout(0, 3, GL_FLOAT),
+            new Layout(1, 4, GL_FLOAT),
+            new Layout(2, 2, GL_FLOAT)
         }
     };
 
+    inline auto position_texture = new VertexSource {
+        R"(#version 330 core
+
+            layout (location = 0) in vec3 positionIn;
+            layout (location = 1) in vec2 texCoordIn;
+
+            uniform mat4 mvp;
+
+            out vec2 texCoord;
+
+            void main() {
+                gl_Position = mvp * vec4(positionIn, 1.0);
+                texCoord = texCoordIn;
+            })",
+        {
+            new Layout(0, 3, GL_FLOAT),
+            new Layout(1, 2, GL_FLOAT)
+        }
+    };
+
+    inline auto position_texture_nmvp = new VertexSource {
+        R"(#version 330 core
+
+            layout (location = 0) in vec3 positionIn;
+            layout (location = 1) in vec2 texCoordIn;
+
+            out vec2 texCoord;
+
+            void main() {
+                gl_Position = vec4(positionIn, 1.0);
+                texCoord = texCoordIn;
+            })",
+        {
+            new Layout(0, 3, GL_FLOAT),
+            new Layout(1, 2, GL_FLOAT)
+        }
+    };
 }
 
 #endif //VERTEXSOURCES_H

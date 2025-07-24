@@ -12,7 +12,7 @@
 
 int Core::init() {
 
-    window = new Window(1280, 720, "CLionProjects");
+    window = new Window(1280, 720, "Zalupa");
     window->init();
 
     ShaderPrograms::init();
@@ -22,8 +22,6 @@ int Core::init() {
 
     auto module = new RenderModule(scene);
     scene->modules.emplace_back(module);
-
-    auto framebuffer = new FrameBuffer(1280, 720);
 
     while (!glfwWindowShouldClose(window->window))
     {
